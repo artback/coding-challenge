@@ -14,6 +14,9 @@ var (
 
 	// app gets initialised with configuration.
 	// as an example we've added 3 providers and a defautl configuration
+
+	// This global var declaration seems unaware of the App struct
+	// @TODO Don't use global variables?
 	app = App{
 		ContentClients: map[Provider]Client{
 			Provider1: SampleContentProvider{Source: Provider1},
