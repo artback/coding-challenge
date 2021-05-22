@@ -30,7 +30,7 @@ func getResults(a App, p Parameters) ResultChannels {
 
 	resultChannels := make(ResultChannels, 0, p.count)
 	for i := 0; i < p.count; i++ {
-		resultChan := make(chan result)
+		resultChan := make(chan result, 1)
 		resultChannels = append(resultChannels, resultChan)
 		go func(index int) {
 			resultChan <- getRequest(p.ip, getClients(a, index%length))
