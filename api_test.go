@@ -65,6 +65,24 @@ func BenchmarkResponseCount(b *testing.B) {
 	}
 }
 
+func BenchmarkResponseFallback(b *testing.B) {
+	app := App{
+		ContentClients: map[Provider]Client{
+			Provider1: FailedContentProvider{Source: Provider1},
+			Provider2: SampleContentProvider{Source: Provider2},
+			Provider3: SampleContentProvider{Source: Provider3},
+		},
+		Config: DefaultConfig,
+	}
+	response := httptest.NewRecorder()
+	for i := 0; i < b.N; i++ {
+		app.ServeHTTP(response, SimpleContentRequest)
+		if response.Code != 200 {
+			b.Fatalf("Response code is %d, want %d", response.Code, 200)
+		}
+	}
+}
+
 func TestResponseLargerCount(t *testing.T) {
 	content, err := runRequest(app, LargeContentRequest, 200)
 	if err != nil {
