@@ -9,6 +9,9 @@ import (
 
 // Client represents a provider's client or SDK
 type Client interface {
+	// @TODO Getcontent should take a context as first paramter if where to do calls
+	// todo any database/http call.
+	// Then we could cancel requests that hangs or are to slow
 	GetContent(userIP string, count int) ([]*ContentItem, error)
 }
 
