@@ -35,6 +35,12 @@ func (a App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 	param := Parameters{ip: ip, offset: offset, count: count}
+	defer func() {
+		if r := recover(); r != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}()
 	json.NewEncoder(w).Encode(GetContentItems(a, param))
 }
 

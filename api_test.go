@@ -245,10 +245,7 @@ func TestNoConfigs(t *testing.T) {
 		},
 		Config: []ContentConfig{},
 	}
-	content, err := runRequest(app, SimpleContentRequest, http.StatusOK)
-	if err != nil {
-		t.Fatal(err)
-	}
+	content, _ := runRequest(app, SimpleContentRequest, http.StatusInternalServerError)
 
 	if len(content) != 0 {
 		t.Fatalf("Got %d items back, want 0", len(content))

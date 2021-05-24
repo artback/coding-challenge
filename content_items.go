@@ -24,17 +24,13 @@ func GetContentItems(a App, p Parameters) []ContentItem {
 // it returns an ordered slice of channels
 func getResults(a App, p Parameters) ResultChannels {
 	length := len(a.Config)
-	if length == 0 {
-		return nil
-	}
-
 	resultChannels := make(ResultChannels, 0, p.count)
 	for i := 0; i < p.count; i++ {
 		resultChan := make(chan result, 1)
 		resultChannels = append(resultChannels, resultChan)
 		go func(ch chan result, index int) {
-			ch <- getRequest(p.ip, getClients(a, index%length))
-		}(resultChan, i+p.offset)
+			ch <- getRequest(p.ip, getClients(a, index))
+		}(resultChan, (i+p.offset)%length)
 	}
 	return resultChannels
 }
