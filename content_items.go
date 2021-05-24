@@ -29,7 +29,7 @@ func getResults(a App, p Parameters) ResultChannels {
 		resultChan := make(chan result, 1)
 		resultChannels = append(resultChannels, resultChan)
 		go func(ch chan result, index int) {
-			ch <- getRequest(p.ip, getClients(a, index))
+			ch <- getRequest(p.ip, getClients(a.ContentClients, a.Config[index]))
 		}(resultChan, (i+p.offset)%length)
 	}
 	return resultChannels
@@ -51,11 +51,10 @@ func (r ResultChannels) toSlice() []ContentItem {
 
 // getClients returns the clients from the config
 // this will be the .Type and if present the .Fallback
-func getClients(a App, index int) []Client {
-	c := a.Config[index]
-	clients := append(make([]Client, 0, 2), a.ContentClients[c.Type])
-	if c.Fallback != nil {
-		clients = append(clients, a.ContentClients[*c.Fallback])
+func getClients(contentClients map[Provider]Client, config ContentConfig) []Client {
+	clients := append(make([]Client, 0, 2), contentClients[config.Type])
+	if config.Fallback != nil {
+		clients = append(clients, contentClients[*config.Fallback])
 	}
 	return clients
 }
