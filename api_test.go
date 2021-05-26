@@ -9,12 +9,13 @@ import (
 )
 
 var (
-	SimpleContentRequest = httptest.NewRequest("GET", "/?offset=0&count=5", nil)
-	LargeContentRequest  = httptest.NewRequest("GET", "/?offset=0&count=125", nil)
-	OffsetContentRequest = httptest.NewRequest("GET", "/?offset=5&count=5", nil)
-	wrongOffsetRequest   = httptest.NewRequest("GET", "/?offset=hello&count=5", nil)
-	missingCountRequest  = httptest.NewRequest("GET", "/?offset=0", nil)
-	wrongMethodRequest   = httptest.NewRequest("POST", "/?offset=0&count=5", nil)
+	SimpleContentRequest   = httptest.NewRequest("GET", "/?Offset=0&Count=5", nil)
+	LargeContentRequest    = httptest.NewRequest("GET", "/?Offset=0&Count=125", nil)
+	OffsetContentRequest   = httptest.NewRequest("GET", "/?Offset=5&Count=5", nil)
+	wrongOffsetRequest     = httptest.NewRequest("GET", "/?Offset=hello&Count=5", nil)
+	missingCountRequest    = httptest.NewRequest("GET", "/?Offset=0", nil)
+	NegativeContentRequest = httptest.NewRequest("GET", "/?Offset=-1&Count=5", nil)
+	wrongMethodRequest     = httptest.NewRequest("POST", "/?Offset=0&Count=5", nil)
 )
 
 func runRequest(srv http.Handler, r *http.Request, code int) ([]*ContentItem, error) {
@@ -122,6 +123,13 @@ func TestWrongMethodFailed(t *testing.T) {
 	}
 }
 
+func TestNegativeFailed(t *testing.T) {
+	_, err := runRequest(app, NegativeContentRequest, http.StatusBadRequest)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestResponseWrongOffsetFailed(t *testing.T) {
 	_, err := runRequest(app, wrongOffsetRequest, http.StatusBadRequest)
 	if err != nil {
@@ -129,9 +137,13 @@ func TestResponseWrongOffsetFailed(t *testing.T) {
 	}
 }
 func TestResponseMissingCountFailed(t *testing.T) {
-	_, err := runRequest(app, missingCountRequest, http.StatusBadRequest)
-	if err != nil {
-		t.Fatal(err)
+	response := httptest.NewRecorder()
+	app.ServeHTTP(response, missingCountRequest)
+
+	if response.Code != http.StatusBadRequest {
+		t.Fatal(
+			fmt.Errorf("Response code is %d, want %d", response.Code, http.StatusBadRequest),
+		)
 	}
 }
 

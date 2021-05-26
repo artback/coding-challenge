@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"gopkg.in/validator.v2"
 	"net"
 	"net/http"
 	"strconv"
@@ -16,16 +17,24 @@ type App struct {
 	Config         ContentMix
 }
 
+// Parameters is a typed structure to make it
+// harder to confuse the Offset and Count parameters to the functions
+type Parameters struct {
+	Ip     string
+	Offset int `validate:"min=0"`
+	Count  int `validate:"min=0"`
+}
+
 func (a App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
 	query := req.URL.Query()
-	count, err := strconv.Atoi(query.Get("count"))
+	count, err := strconv.Atoi(query.Get("Count"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
-	offset, err := strconv.Atoi(query.Get("offset"))
+	offset, err := strconv.Atoi(query.Get("Offset"))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
@@ -34,7 +43,11 @@ func (a App) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	param := Parameters{ip: ip, offset: offset, count: count}
+	param := Parameters{Ip: ip, Offset: offset, Count: count}
+	if err = validator.Validate(param); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	defer func() {
 		if r := recover(); r != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -71,5 +84,5 @@ func getIP(r *http.Request) (string, error) {
 	if netIP != nil {
 		return ip, nil
 	}
-	return "", fmt.Errorf("No valid ip found")
+	return "", fmt.Errorf("No valid Ip found")
 }

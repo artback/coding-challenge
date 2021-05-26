@@ -6,14 +6,6 @@ type result struct {
 }
 type ResultChannels []chan result
 
-// Parameters is a typed structure to make it
-// harder to confuse the offset and count parameters to the functions
-type Parameters struct {
-	ip     string
-	offset int
-	count  int
-}
-
 // GetContentItems does concurrent requests for each config respecting there fallback if existing,
 // it returns ordered slice, any error will result in subsequent values being discarded
 func GetContentItems(a App, p Parameters) []ContentItem {
@@ -24,13 +16,13 @@ func GetContentItems(a App, p Parameters) []ContentItem {
 // it returns an ordered slice of channels
 func getResults(a App, p Parameters) ResultChannels {
 	length := len(a.Config)
-	resultChannels := make(ResultChannels, 0, p.count)
-	for i := 0; i < p.count; i++ {
+	resultChannels := make(ResultChannels, 0, p.Count)
+	for i := 0; i < p.Count; i++ {
 		resultChan := make(chan result, 1)
 		resultChannels = append(resultChannels, resultChan)
 		go func(ch chan result, index int) {
-			ch <- getRequest(p.ip, getClients(a.ContentClients, a.Config[index]))
-		}(resultChan, (i+p.offset)%length)
+			ch <- getRequest(p.Ip, getClients(a.ContentClients, a.Config[index]))
+		}(resultChan, (i+p.Offset)%length)
 	}
 	return resultChannels
 }
